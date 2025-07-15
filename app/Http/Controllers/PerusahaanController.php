@@ -21,6 +21,6 @@ class PerusahaanController extends Controller
     public function update(Request $request, $id){
         $perusahaan = Perusahaan::findOrFail($id);
         $perusahaan->update($request->all());
-        return redirect()->route('perusahaan.index')->with('success', 'Perusahaan updated successfully.');
+        return redirect()->route('perusahaan.index')->with('success', 'Perusahaan berhasil diperbarui.');
     }
 }

@@ -14,4 +14,28 @@ class PerusahaanController extends Controller
         $perusahaan = Perusahaan::all();
         return PerusahaanResource::collection($perusahaan);
     }
+
+    public function update(Request $request, $id)
+    {
+        $perusahaan = Perusahaan::findOrFail($id);
+
+        $validated = $request->validate([
+            'nama' => 'nullable|string|max:255',
+            'alamat' => 'nullable|string|max:255',
+            'provinsi' => 'nullable|string|max:255',
+            'kab_kota' => 'nullable|string|max:255',
+            'kecamatan' => 'nullable|string|max:255',
+            'kelurahan' => 'nullable|string|max:255',
+            'no_telp' => 'nullable|string|max:255',
+            'kode_pos' => 'nullable|string|max:255',
+            'penanggung_jawab' => 'nullable|string|max:255',
+            'no_hp' => 'nullable|string|max:255',
+            'jabatan' => 'nullable|string|max:255',
+            'email' => 'nullable|email|max:255',
+        ]);
+
+        $perusahaan->update($validated);
+
+        return new PerusahaanResource($perusahaan);
+    }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ReportExport;
+use App\Exports\ReportExportTahunanMultiSheet;
 use App\Models\SensorEntry;
 use App\Models\Perusahaan;
 use App\Models\Report;
@@ -98,6 +99,13 @@ class ReportController extends Controller
         $tanggal = $request->get('tanggal');
         $bulan = $request->get('bulan');
         $tahun = $request->get('tahun');
+
+        if($periodType === 'tahunan'){
+            return Excel::download(new ReportExportTahunanMultiSheet($tahun), 'report_'. $tahun .'.xlsx');
+        } else if($periodType === 'bulanan'){
+            return Excel::download(new ReportExport($periodType, $tanggal, $bulan, $tahun), 'report_' . $bulan .'.xlsx');
+
+        }
         return Excel::download(new ReportExport($periodType, $tanggal, $bulan, $tahun), 'report.xlsx');
     }
 

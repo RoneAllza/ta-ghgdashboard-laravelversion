@@ -142,7 +142,7 @@
                 <div class="p-6 text-gray-900">
                     <h2>Status Sensor</h2>
                     @foreach ($sensors as $s)
-                    <a href="{{ route('sensor.edit', $s->id) }}">
+                    <a href="{{ route('sensors.edit', $s->id) }}">
                         <div
                             class="bg-white flex justify-between overflow-hidden shadow-sm sm:rounded-lg border border-slate-700 border-1 gap-y-2 mt-4 p-2">
                             <h2>{{ $s->sensor_name }}</h2>

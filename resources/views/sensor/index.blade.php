@@ -61,6 +61,7 @@
 
                 </div>
             </div>
+            @if(auth()->check() && auth()->user()->role == 'unit_lingkungan')
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-2">
                 <div class="overflow-x-auto">
                     <div class="p-6 bg-white border-b border-gray-200">
@@ -97,21 +98,52 @@
                                     <td class="px-6 py-4 whitespace-nowrap">{{ $sensor->unit}}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <a href="http://maps.google.com/maps?q={{ $sensor->latitude }}%2C{{ $sensor->longitude }}&z=17&hl=en"
-                                            class="text-blue-600 hover:text-blue-900">View on Map</a>
-                                        |
-                                        <a href="{{ route('sensor.edit', $sensor->id) }}"
-                                            class="text-blue-600 hover:text-blue-900">Edit</a>
-                                        |
-                                        <form action="{{ route('sensor.destroy', $sensor->id) }}" method="POST"
+                                            ><x-primary-button>View on Map</x-primary-button></a>
+                                        
+                                        <a href="{{ route('sensors.edit', $sensor->id) }}"
+                                            ><x-primary-button>Edit</x-primary-button></a>
+                                        
+                                        <form action="{{ route('sensors.destroy', $sensor->id) }}" method="POST"
                                             style="display:inline;"
                                             onsubmit="return confirm('Are you sure you want to delete this sensor?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit"
-                                                class="text-red-600 hover:text-red-900">Delete</button>
+                                            <x-danger-button>Delete</x-danger-button>
                                         </form>
-                                        |
-                                        <a href="#">Maintenance</a>
+                                        
+                                        <a href="#">
+                                            <x-secondary-button onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'add-maintenance-{{ $sensor->id }}' }))">
+                                                Maintenance
+                                            </x-secondary-button>
+                                        </a>
+                                        <x-modal id="modalDel{{ $sensor->id }}" name="add-maintenance-{{ $sensor->id }}">
+                                            <form method="POST" action="{{ route('teknisi_maintenances.store') }}" class="p-6">
+                                                @csrf
+                                                <input type="hidden" name="sensor_id" value="{{ $sensor->id }}">
+                                                <div>
+                                                    <label class="block font-medium">Nama Alat</label>
+                                                    <x-text-input name="nama_alat" value="{{ $sensor->sensor_name }}" readonly class="w-full" />
+                                                </div>
+                                                <div class="mt-4">
+                                                    <label class="block font-medium">Jenis Maintenance</label>
+                                                    <select name="jenis_maintenance" class="w-full border-gray-300 rounded">
+                                                        <option value="perbaikan">Perbaikan</option>
+                                                        <option value="penggantian">Penggantian</option>
+                                                    </select>
+                                                </div>
+                                                <div class="mt-4">
+                                                    <label class="block font-medium">Jenis Alat</label>
+                                                    <select name="jenis_alat" class="w-full border-gray-300 rounded">
+                                                        <option value="sensor">Sensor</option>
+                                                        <option value="aktuator">Aktuator</option>
+                                                    </select>
+                                                </div>
+                                                
+                                                <div class="mt-6 flex justify-end">
+                                                    <x-primary-button type="submit">Simpan</x-primary-button>
+                                                </div>
+                                            </form>
+                                        </x-modal>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -120,13 +152,14 @@
                     </div>
                 </div>
             </div>
-            {{-- <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-2">
+            @elseif(auth()->check() && auth()->user()->role == 'teknisi')
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-2">
                 <div class="overflow-x-auto">
                     <div class="p-6 bg-white border-b border-gray-200">
                         <div class="flex justify-between">
-                            <span>Data Channel</span>
-                            <a href="/channel/add">
-                                <x-primary-button>+ Tambah Channel</x-button-primary>
+                            <span>Data Sensor</span>
+                            <a href="/teknisi/sensor/create">
+                                <x-primary-button>+ Tambah Sensor</x-button-primary>
                             </a>
                         </div>
                         <table class="min-w-full divide-y divide-gray-200">
@@ -134,10 +167,13 @@
                                 <tr>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Channel Name</th>
+                                        Sensor Name</th>
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Channel ID</th>
+                                        Field</th>
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Unit</th>
                                     <!-- <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Latitude</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Longitude</th> -->
                                     <th scope="col"
@@ -146,38 +182,81 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                @foreach ($channels as $ch)
+                                @foreach ($sensors as $sensor)
                                 <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $ch->name }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">{{ $ch->channel_id }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $sensor->sensor_name }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $sensor->field}}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $sensor->unit}}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        {{-- <a href="http://maps.google.com/maps?q={{ $ch->latitude }}%2C{{ $ch->longitude }}&z=17&hl=en"
-                                            class="text-blue-600 hover:text-blue-900">View on Map</a>
-                                        |
-                                        <a href="{{ route('sensor.edit', $sensor->id) }}"
-                                            class="text-blue-600 hover:text-blue-900">Edit</a>
-                                        |
-                                        <form action="{{ route('sensor.destroy', $sensor->id) }}" method="POST"
+                                        <a href="http://maps.google.com/maps?q={{ $sensor->latitude }}%2C{{ $sensor->longitude }}&z=17&hl=en"
+                                            ><x-primary-button>View on Map</x-primary-button></a>
+                                        
+                                        <a href="{{ route('sensors.edit', $sensor->id) }}"
+                                            ><x-primary-button>Edit</x-primary-button></a>
+                                        
+                                        <form action="{{ route('sensors.destroy', $sensor->id) }}" method="POST"
                                             style="display:inline;"
                                             onsubmit="return confirm('Are you sure you want to delete this sensor?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit"
-                                                class="text-red-600 hover:text-red-900">Delete</button>
+                                            <x-danger-button>Delete</x-danger-button>
                                         </form>
-                                        | --}}
-                                        {{-- <a href="#">Maintenance</a>
+                                        
+                                        <a href="#">
+                                            <x-secondary-button onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'add-maintenance-{{ $sensor->id }}' }))">
+                                                Maintenance
+                                            </x-secondary-button>
+                                        </a>
+                                        <x-modal id="modalDel{{ $sensor->id }}" name="add-maintenance-{{ $sensor->id }}">
+                                            <form method="POST" action="{{ route('teknisi_maintenances.store') }}" class="p-6">
+                                                @csrf
+                                                <input type="hidden" name="sensor_id" value="{{ $sensor->id }}">
+                                                <div>
+                                                    <label class="block font-medium">Nama Alat</label>
+                                                    <x-text-input name="nama_alat" value="{{ $sensor->sensor_name }}" readonly class="w-full" />
+                                                </div>
+                                                <div class="mt-4">
+                                                    <label class="block font-medium">Jenis Maintenance</label>
+                                                    <select name="jenis_maintenance" class="w-full border-gray-300 rounded">
+                                                        <option value="perbaikan">Perbaikan</option>
+                                                        <option value="penggantian">Penggantian</option>
+                                                    </select>
+                                                </div>
+                                                <div class="mt-4">
+                                                    <label class="block font-medium">Jenis Alat</label>
+                                                    <select name="jenis_alat" class="w-full border-gray-300 rounded">
+                                                        <option value="sensor">Sensor</option>
+                                                        <option value="aktuator">Aktuator</option>
+                                                    </select>
+                                                </div>
+                                                
+                                                <div class="mt-6 flex justify-end">
+                                                    <x-primary-button type="submit">Simpan</x-primary-button>
+                                                </div>
+                                            </form>
+                                        </x-modal>
                                     </td>
                                 </tr>
                                 @endforeach
                             </tbody>
                         </table>
-                    </div> --}}
-                {{-- </div> --}}
-            {{-- </div> --}}
+                    </div>
+                </div>
+            </div>
+            @endif
         </div>
     </div>
     </div>
 
 
 </x-app-layout>
+
+{{-- Leaflet map fix: hide map when modal open --}}
+<script>
+    window.addEventListener('open-modal', function(e) {
+        document.getElementById('map').style.zIndex = 0;
+    });
+    window.addEventListener('close-modal', function(e) {
+        document.getElementById('map').style.zIndex = '';
+    });
+</script>

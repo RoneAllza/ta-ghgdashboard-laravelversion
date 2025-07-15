@@ -16,7 +16,7 @@
                 <div class="p-6 bg-white border-b border-gray-200">
 
                     <h1 class=" font-bold ">Edit {{ $fuelProp->fuel_type }}</h1>
-                    <form action="{{ route('fuel_props.update', $fuelProp->id) }}" method="POST" class="gap-y-4">
+                    <form action="{{ route('fuel_props.update', $fuelProp->id) }}" method="POST" class="space-y-6">
                         @csrf
                         @method('PUT')
                         <div>

@@ -16,7 +16,7 @@ $user = Auth::user();
                     {{ __('Buat Laporan') }}
                 </h2>
                 <div class="max-w-xl">
-                    <form method="post" action="{{ route('report.store') }}" class="mt-6 space-y-6">
+                    <form method="post" action="{{ route('reports.store') }}" class="mt-6 space-y-6">
                         @csrf
 
                         <div>

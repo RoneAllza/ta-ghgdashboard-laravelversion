@@ -7,13 +7,12 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithCustomStartCell;
+use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Events\AfterSheet;
 
-class ReportExport implements FromCollection, WithHeadings, WithMapping, WithEvents
+class ReportExport implements FromCollection, WithHeadings, WithMapping, WithEvents, WithCustomStartCell, WithTitle
 {
-    /**
-    * @var string
-    */
     protected $periodType;
     protected $tanggal;
     protected $bulan;
@@ -29,24 +28,26 @@ class ReportExport implements FromCollection, WithHeadings, WithMapping, WithEve
 
     public function collection()
     {
-        $query = Report::with(['perusahaan', 'sumber_emisi', 'sensor']);
-        if ($this->periodType === 'harian' && $this->tanggal) {
-            // Ganti filter ke period_date, bukan updated_at
-            $query->whereDate('period_date', $this->tanggal);
-        } elseif ($this->periodType === 'bulanan' && $this->bulan) {
-            [$year, $month] = explode('-', $this->bulan);
-            $query->whereYear('period_date', $year)->whereMonth('period_date', $month);
+        $query = Report::with(['perusahaan', 'sumber_emisi', 'sensor'])
+            ->where('period_type', $this->periodType);
+
+        if ($this->periodType === 'harian' && $this->tahun) {
+            $query->whereYear('period_date', $this->tahun);
+        } elseif ($this->periodType === 'bulanan' && $this->tahun) {
+            $query->whereYear('period_date', $this->tahun);
         } elseif ($this->periodType === 'tahunan' && $this->tahun) {
             $query->whereYear('period_date', $this->tahun);
         }
+
         return $query->get();
     }
+
 
     public function headings(): array
     {
         return [
             'ID',
-            // 'Nama Laporan',
+            'Nama Laporan',
             'Tipe Periode',
             'Tanggal Periode',
             'Kode Kategori',
@@ -64,6 +65,7 @@ class ReportExport implements FromCollection, WithHeadings, WithMapping, WithEve
             'Perusahaan',
             'Sumber Emisi',
             'Sensor',
+            'Status',
             'Terakhir Diperbarui'
         ];
     }
@@ -72,7 +74,7 @@ class ReportExport implements FromCollection, WithHeadings, WithMapping, WithEve
     {
         return [
             $report->id,
-            // $report->report_name,
+            $report->report_name,
             $report->period_type,
             $report->period_date,
             $report->category_code,
@@ -87,9 +89,9 @@ class ReportExport implements FromCollection, WithHeadings, WithMapping, WithEve
             $report->avg_pm25,
             $report->avg_pm10,
             $report->komentar,
-            $report->perusahaan ? $report->perusahaan->nama : '-',
-            $report->sumber_emisi ? $report->sumber_emisi->nama : '-',
-            $report->sensor ? $report->sensor->sensor_name : '-',
+            $report->perusahaan?->nama ?? '-',
+            $report->sumber_emisi?->sumber ?? '-',
+            $report->sensor?->sensor_name ?? '-',
             ucfirst($report->status ?? '-'),
             optional($report->updated_at)->format('Y-m-d H:i:s'),
         ];
@@ -98,32 +100,48 @@ class ReportExport implements FromCollection, WithHeadings, WithMapping, WithEve
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 $firstReport = $this->collection()->first();
-                $perusahaan = $firstReport && $firstReport->perusahaan ? $firstReport->perusahaan : null;
+                $perusahaan = $firstReport?->perusahaan;
                 $sheet = $event->sheet->getDelegate();
-                $row = 1;
+
                 if ($perusahaan) {
-                    $sheet->setCellValue('A'.$row++, 'Identitas Perusahaan');
-                    $sheet->setCellValue('A'.$row++, 'Nama');
-                    $sheet->setCellValue('B'.($row-1), $perusahaan->nama);
-                    $sheet->setCellValue('A'.$row++, 'Alamat');
-                    $sheet->setCellValue('B'.($row-1), $perusahaan->alamat);
-                    $sheet->setCellValue('A'.$row++, 'Provinsi');
-                    $sheet->setCellValue('B'.($row-1), $perusahaan->provinsi);
-                    $sheet->setCellValue('A'.$row++, 'Kab/Kota');
-                    $sheet->setCellValue('B'.($row-1), $perusahaan->kab_kota);
-                    $sheet->setCellValue('A'.$row++, 'Kecamatan');
-                    $sheet->setCellValue('B'.($row-1), $perusahaan->kecamatan);
-                    $sheet->setCellValue('A'.$row++, 'Kelurahan');
-                    $sheet->setCellValue('B'.($row-1), $perusahaan->kelurahan);
-                    $sheet->setCellValue('A'.$row++, 'No. Telp');
-                    $sheet->setCellValue('B'.($row-1), $perusahaan->no_telp);
-                    $sheet->setCellValue('A'.$row++, 'Kode Pos');
-                    $sheet->setCellValue('B'.($row-1), $perusahaan->kode_pos);
-                    $row++;
+                    $identitas = [
+                        'Nama'         => $perusahaan->nama,
+                        'Alamat'       => $perusahaan->alamat,
+                        'Provinsi'     => $perusahaan->provinsi,
+                        'Kab/Kota'     => $perusahaan->kab_kota,
+                        'Kecamatan'    => $perusahaan->kecamatan,
+                        'Kelurahan'    => $perusahaan->kelurahan,
+                        'No. Telp'     => $perusahaan->no_telp,
+                        'Kode Pos'     => $perusahaan->kode_pos,
+                        'Tipe Periode' => $this->periodType,
+                        'Tanggal'      => match ($this->periodType) {
+                            'harian'  => $this->tanggal,
+                            'bulanan' => $this->bulan,
+                            'tahunan' => $this->tahun,
+                            default   => '-'
+                        },
+                    ];
+
+                    $row = 1;
+                    foreach ($identitas as $label => $value) {
+                        $sheet->setCellValue('A' . $row, $label);
+                        $sheet->setCellValue('B' . $row, $value);
+                        $row++;
+                    }
                 }
             }
         ];
+    }
+
+    public function startCell(): string
+    {
+        return 'A12';
+    }
+
+    public function title(): string
+    {
+        return ucfirst($this->periodType);
     }
 }

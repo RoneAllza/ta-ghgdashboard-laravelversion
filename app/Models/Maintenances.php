@@ -15,11 +15,12 @@ class Maintenances extends Model
         'waktu_mulai',
         'waktu_selesai',
         'teknisi',
-        'keterangan'
+        'keterangan',
+        'status',
     ];
 
-    public function channel()
+    public function sensor()
     {
-        return $this->belongsTo(ThingspeakChannel::class);
+        return $this->belongsTo(Sensor::class);
     }
 }

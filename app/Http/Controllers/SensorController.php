@@ -77,9 +77,9 @@ class SensorController extends Controller
         }
 
         // Tambahkan pemanggilan command perhitungan otomatis
-        Artisan::call('app:generate-fuel-combustion-activity');
+        // Artisan::call('app:generate-fuel-combustion-activity');
 
-        return redirect()->route('sensor.index')->with('success', 'Sensor created successfully.');
+        return redirect()->route('sensors.index')->with('success', 'Sensor created successfully.');
     }
 
     /**
@@ -88,7 +88,7 @@ class SensorController extends Controller
     public function show(Sensor $sensor)
     {
         //  Return the view with the sensor data
-        return view('sensor.show', compact('sensor'));
+        return view('sensors.show', compact('sensor'));
     }
 
     /**
@@ -134,7 +134,7 @@ class SensorController extends Controller
 
         $sensor->update($validated);
 
-        return redirect()->route('sensor.index')->with('success', 'Sensor updated successfully.');
+        return redirect()->route('sensors.index')->with('success', 'Sensor updated successfully.');
     }
 
     /**
@@ -147,7 +147,7 @@ class SensorController extends Controller
         // Delete the sensor from the database
         $sensor->delete();
         // Redirect to the sensors index page with a success message
-        return redirect()->route('sensor.index')->with('success', 'Sensor deleted successfully.');
+        return redirect()->route('sensors.index')->with('success', 'Sensor deleted successfully.');
     }
 
     public function export(){

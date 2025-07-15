@@ -115,7 +115,7 @@
 
     </div>
 
-    {{-- <a href="/profile">
+    <a href="/profile">
         <img aria-hidden="true" class="w-[40px] h-[40px] self-center" src="{{ asset('images/Icon.png') }}" alt="" />
-    </a> --}}
+    </a>
 </div>

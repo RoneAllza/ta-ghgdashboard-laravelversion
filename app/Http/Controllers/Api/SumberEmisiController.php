@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\KategoriEmisiResource;
 use App\Http\Resources\SumberEmisiResource;
 use App\Models\FuelProperties;
+use App\Models\KategoriSumber;
 use App\Models\SumberEmisi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -38,7 +40,8 @@ class SumberEmisiController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'sumber' => 'required|string|max:255',
-            'tipe_sumber' => 'required|in:kendaraan,alat_berat,boiler,lainnya',
+            'kategori_sumber_id' => 'required|exists:kategori_sumbers,id',
+            // 'tipe_sumber' => 'required|in:kendaraan,alat_berat,boiler,lainnya',
             'frekuensi_hari' => 'required|integer|min:1',
             'kapasitas_output' => 'nullable|numeric|min:0.001',
             'unit' => 'required|in:ton,liter',
@@ -51,17 +54,7 @@ class SumberEmisiController extends Controller
             return response()->json($validator->errors(), 422); // Unprocessable Entity
         }
 
-        $categoryMap = [
-            'genset' => '1A1',
-            'boiler' => '1A1',
-            'alat_berat' => '1A2',
-            'kendaraan' => '1A2',
-            'dryer' => '1A2',
-            'ventilasi' => '1B1',
-            'lainnya' => '1A2'
-        ];
-
-        $categoryCode = $categoryMap[$validator['tipe_sumber']] ?? '1A2';
+        $kategori = KategoriSumber::findOrFail($request->kategori_sumber_id);
 
         $fuel = FuelProperties::findOrFail($request->fuel_properties_id);
 
@@ -80,8 +73,7 @@ class SumberEmisiController extends Controller
 
         $sumberEmisi = SumberEmisi::create([
             'sumber' => $request->sumber,
-            'tipe_sumber' => $request->tipe_sumber,
-            'category_code' => $categoryCode,
+            'category_code' => $kategori,
             'fuel_properties_id' => $fuel->id,
             'kapasitas_output' => $request->kapasitas_output,
             'durasi_pemakaian' => $request->durasi_pemakaian,
@@ -121,7 +113,44 @@ class SumberEmisiController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $sumber = SumberEmisi::find($id);
+        if(!$sumber){
+            return response()->json([
+                'success' => false,
+                'message' => 'Sumber Emisi not found',
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'sumber' => 'nullable|string|max:255',
+            'kategori_sumber_id' => 'nullable|exists:kategori_sumbers,id',
+            // 'tipe_sumber' => 'nullable|string|max:255',
+            'frekuensi_hari' => 'nullable|integer|min:1',
+            'kapasitas_output' => 'nullable|numeric|min:0.001',
+            'unit' => 'nullable|string|max:255',
+            'durasi_pemakaian' => 'nullable|numeric|min:0.001',
+            'fuel_properties_id' => 'nullable|exists:fuel_properties,id',
+            'dokumentasi' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation errors',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $sumber->update($request->only([
+            'sumber', 'kategori_sumber_id', 'tipe_sumber', 'frekuensi_hari',
+            'kapasitas_output', 'unit', 'durasi_pemakaian', 'fuel_properties_id'
+        ]));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Sumber Emisi updated successfully',
+            'data' => new SumberEmisiResource($sumber->load('fuel_properties'))
+        ], 200);
     }
 
     /**
@@ -129,6 +158,17 @@ class SumberEmisiController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $sumber = SumberEmisi::find($id);
+        if (!$sumber) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sumber Emisi not found',
+            ], 404);
+        }
+        $sumber->delete();
+        return response()->json([
+            'success' => true,
+            'message' => 'Sumber Emisi deleted successfully',
+        ], 200);
     }
 }

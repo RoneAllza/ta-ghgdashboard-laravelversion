@@ -28,4 +28,8 @@ class Sensor extends Model
     {
         return $this->hasMany(Report::class);
     }
+    public function maintenances()
+    {
+        return $this->hasMany(Maintenances::class);
+    }
 }

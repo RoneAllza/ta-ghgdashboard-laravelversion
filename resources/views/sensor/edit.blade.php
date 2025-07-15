@@ -34,7 +34,7 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
                     <h1 class="font-bold">Edit Sensor</h1>
-                    <form action="{{ route('sensor.update', $sensor->id) }}" method="POST">
+                    <form action="{{ route('sensors.update', $sensor->id) }}" method="POST" class="space-y-6">
                         @csrf
                         @method('PUT')
                         <div>

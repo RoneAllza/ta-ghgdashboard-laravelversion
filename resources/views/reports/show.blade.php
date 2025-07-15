@@ -64,7 +64,7 @@
                 </div>
 
                 <div class="flex justify-end gap-x-4 mt-4">
-                    <form method="GET" action="{{ route('report.export') }}">
+                    <form method="GET" action="{{ route('reports.export') }}">
                         <input type="hidden" name="period_type" value="{{ $report->period_type }}">
                         @if($report->period_type === 'harian')
                             <input type="hidden" name="tanggal" value="{{ $report->period_date }}">

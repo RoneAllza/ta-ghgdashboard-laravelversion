@@ -13,7 +13,8 @@
                     <div class="flex justify-between items-center mb-4">
                         <h1 class="font-bold">Laporan</h1>
                         <select id="periodFilter" class="border rounded">
-                            <option value="">Filter Periode</option>
+                            <option value="" disabled>Filter Periode</option>
+                            <option value="">Semua</option>
                             <option value="harian">Harian</option>
                             <option value="bulanan">Bulanan</option>
                             <option value="tahunan">Tahunan</option>
@@ -34,7 +35,7 @@
                             tanggal: (new Date()).toISOString().slice(0,10),
                         }">
                             <h2 class="text-lg font-bold mb-4">Pilih Tipe Laporan</h2>
-                            <form method="GET" action="{{ route('report.export') }}">
+                            <form method="GET" action="{{ route('reports.export') }}">
                                 <div class="mb-4">
                                     <label class="inline-flex items-center mr-4">
                                         <input type="radio" class="form-radio" name="period_type" value="harian" x-model="periodType">

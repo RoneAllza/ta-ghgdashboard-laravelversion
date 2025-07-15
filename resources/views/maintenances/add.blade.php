@@ -16,13 +16,13 @@ $user = Auth::user();
                     {{ __('Buat Laporan') }}
                 </h2>
                 <div class="max-w-xl">
-                    <form method="post" action="{{ route('maintenance.store') }}" class="mt-6 space-y-6" enctype="multipart/form-data">
+                    <form method="post" action="{{ route('teknisi_maintenances.store') }}" class="mt-6 space-y-6" enctype="multipart/form-data">
                         @csrf
 
                         <div>
                             <x-input-label for="nama_alat" :value="__('Nama Alat')" />
                             <x-text-input id="nama_alat" name="nama_alat" type="text"
-                                class="mt-1 block w-full" required autofocus autocomplete="nama_alat" placeholder="nama_alat emisi (mis. Hino Dutro - B1234ABC)"/>
+                                class="mt-1 block w-full" required autofocus autocomplete="nama_alat" placeholder="Nama alat emisi (mis. Sensor ABC)"/>
                             <x-input-error class="mt-2" :messages="$errors->get('nama_alat')" />
                         </div>
 
@@ -49,7 +49,7 @@ $user = Auth::user();
                         <div>
                             <x-input-label for="jenis_maintenance" :value="__('jenis_maintenance')" />
                             <x-select-input id="jenis_maintenance" name="jenis_maintenance" type="text" class="mt-1 block w-full" required autofocus autocomplete="status">
-                                <option selected disabled>Pilih Jenis Maintenance...</option>
+                                <option selected disabled>Pilih Jenis maintenances...</option>
                                 <option value="perbaikan" >Perbaikan</option>
                                 <option value="penggantian" >Penggantian</option>
                             </x-select-input>

@@ -12,6 +12,10 @@ class FuelPropertiesController extends Controller
     {
         // Use pagination for fuel properties
         $fuelProps = FuelProperties::paginate(5); // 5 per page, adjust as needed
+        // Jika request AJAX, kembalikan partial view
+        // if (request()->ajax()) {
+        //     return view('fuel_props._table', ['fuelProperties' => $fuelProps])->render();
+        // }
         return view('fuel_props.index', compact('fuelProps'));
     }
 

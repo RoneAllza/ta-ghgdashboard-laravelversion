@@ -2,7 +2,7 @@
     <x-slot name="header">
         <span class="font-light text-slate-400 text-sm">Home / Bahan Bakar</span>
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Sumber Emisi') }}
+            {{ __('Data Jenis Bahan Bakar') }}
         </h2>
     </x-slot>
 
@@ -34,12 +34,12 @@
                                 placeholder="Search for data">
                         </div>
                         <div class="mt-6 flex justify-end gap-x-4">
-                            <a href="/emisi/tambah">
+                            <a href="/fuel-props/add">
                                 <x-primary-button>
                                     {{ __('+ Tambah') }}
                                 </x-primary-button>
                             </a>
-                            <a href="{{ route('emisi.export') }}">
+                            <a href="{{ route('emisis.export') }}">
                                 <x-primary-button>
                                     {{ __('> Export') }}
                                 </x-primary-button>
@@ -74,7 +74,7 @@
                                         Hapus
                                     </x-danger-button>
                                     <x-modal id="modalDel{{ $fp->id }}" name="confirm-fuel-props-deletion-{{ $fp->id }}">
-                                        <form method="post" action="{{ route('emisi.destroy', $fp->id) }}" class="p-6">
+                                        <form method="post" action="{{ route('emisis.destroy', $fp->id) }}" class="p-6">
                                             @csrf
                                             @method('delete')
                                             <h2 class="text-sm text-gray-600">
